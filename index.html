@@ -1,0 +1,1527 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Engine - Private & Fast Web Search</title>
+    <meta name="description" content="Privacy-focused search engine with AI summaries and multiple search providers">
+
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/components.css">
+    <link rel="stylesheet" href="styles/themes.css">
+    <link rel="stylesheet" href="styles/responsive.css">
+    <!-- Search Results Styles -->
+    <link rel="stylesheet" href="styles/search-results.css">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#4285f4">
+
+    <!-- SEO Meta Tags -->
+    <meta property="og:title" content="Search Engine">
+    <meta property="og:description" content="Privacy-focused search engine">
+    <meta property="og:image" content="/og-image.png">
+    <meta property="og:url" content="https://your-domain.com">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+    <style>
+        /* Modern Settings Overlay */
+        .settings-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .45);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .settings-overlay.active {
+            opacity: 1;
+        }
+
+        .settings-card {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            width: 95%;
+            max-width: 700px;
+            max-height: 85vh;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .3);
+            overflow: hidden;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+
+        .settings-overlay.active .settings-card {
+            transform: translateY(0);
+        }
+
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+        }
+
+        .settings-header h3 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .settings-header h3 i {
+            color: var(--accent-color);
+        }
+
+        .settings-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+        }
+
+        .settings-close:hover {
+            background: var(--hover-color);
+            color: var(--text-primary);
+        }
+
+        .settings-content {
+            display: flex;
+            min-height: 500px;
+            max-height: 65vh;
+            overflow: hidden;
+        }
+
+        .settings-sidebar {
+            width: 200px;
+            border-right: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            padding: 20px 0;
+            overflow-y: auto;
+        }
+
+        .settings-tab {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .settings-tab:hover {
+            background: var(--hover-color);
+            color: var(--text-primary);
+        }
+
+        .settings-tab.active {
+            background: var(--accent-color-light);
+            color: var(--accent-color);
+            border-left-color: var(--accent-color);
+            font-weight: 500;
+        }
+
+        .settings-tab i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .settings-panes {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .settings-pane {
+            display: none;
+        }
+
+        .settings-pane.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .settings-group {
+            margin-bottom: 30px;
+        }
+
+        .settings-group h4 {
+            margin: 0 0 16px 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .settings-group h4 i {
+            color: var(--accent-color);
+        }
+
+        .setting {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color-light);
+        }
+
+        .setting:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .setting-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .setting-label {
+            flex: 1;
+        }
+
+        .setting-label h5 {
+            margin: 0 0 4px 0;
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .setting-label p {
+            margin: 0;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .setting-control {
+            width: auto;
+        }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 54px;
+            height: 28px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--bg-tertiary);
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        input:checked + .toggle-slider {
+            background-color: var(--accent-color);
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+
+        /* Input and Select Styles */
+        .input-group {
+            position: relative;
+            width: 100%;
+        }
+
+        .input-group input,
+        .input-group select,
+        .input-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            padding-left: 42px;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .input-group i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            transition: color 0.3s ease;
+        }
+
+        .input-group input:focus,
+        .input-group select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px var(--accent-color-light);
+        }
+
+        .input-group input:focus + i {
+            color: var(--accent-color);
+        }
+
+        /* Range Slider */
+        .range-slider {
+            width: 100%;
+            appearance: none;
+            -webkit-appearance: none;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--bg-tertiary);
+            outline: none;
+        }
+
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            cursor: pointer;
+            border: 3px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .range-value {
+            display: inline-block;
+            margin-left: 12px;
+            padding: 4px 12px;
+            background: var(--bg-secondary);
+            border-radius: 6px;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        /* Radio and Checkbox Groups */
+        .radio-group,
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .radio-option,
+        .checkbox-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: background 0.2s ease;
+        }
+
+        .radio-option:hover,
+        .checkbox-option:hover {
+            background: var(--hover-color);
+        }
+
+        .radio-option input[type="radio"],
+        .checkbox-option input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin: 0;
+        }
+
+        /* Color Picker */
+        .color-picker {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+
+        .color-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+
+        .color-option.active {
+            border-color: var(--text-primary);
+            transform: scale(1.05);
+        }
+
+        /* Button Styles */
+        .settings-footer {
+            display: flex;
+            gap: 12px;
+            padding: 20px 24px;
+            border-top: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 10px;
+            border: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--accent-color);
+            color: white;
+            flex: 2;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-color-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            flex: 1;
+        }
+
+        .btn-secondary:hover {
+            background: var(--hover-color);
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+            flex: 1;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+            transform: translateY(-1px);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .settings-content {
+                flex-direction: column;
+            }
+            
+            .settings-sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+                padding: 0;
+                display: flex;
+                overflow-x: auto;
+            }
+            
+            .settings-tab {
+                padding: 16px 20px;
+                white-space: nowrap;
+                border-left: none;
+                border-bottom: 3px solid transparent;
+                justify-content: center;
+            }
+            
+            .settings-tab.active {
+                border-left: none;
+                border-bottom-color: var(--accent-color);
+            }
+            
+            .settings-panes {
+                padding: 20px;
+                max-height: 50vh;
+            }
+            
+            .settings-footer {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+
+        /* Dark theme adjustments */
+        [data-theme="dark"] .settings-card {
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .5);
+        }
+
+        [data-theme="dark"] .input-group input,
+        [data-theme="dark"] .input-group select {
+            background: var(--bg-tertiary);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-left">
+            <a href="/" class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <span>Search Engine</span>
+            </a>
+
+            <div class="search-categories">
+                <a href="#" class="category-btn active" data-category="web">
+                    <i class="fas fa-globe"></i>
+                    <span>Web</span>
+                </a>
+                <a href="#" class="category-btn" data-category="images">
+                    <i class="fas fa-image"></i>
+                    <span>Images</span>
+                </a>
+                <a href="#" class="category-btn" data-category="videos">
+                    <i class="fas fa-video"></i>
+                    <span>Videos</span>
+                </a>
+                <a href="#" class="category-btn" data-category="news">
+                    <i class="fas fa-newspaper"></i>
+                    <span>News</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="nav-right">
+            <div class="quick-actions">
+                <button class="nav-btn" data-action="apps" title="Google Apps">
+                    <i class="fas fa-th"></i>
+                </button>
+                <button class="nav-btn" data-action="bookmarks" title="Bookmarks">
+                    <i class="fas fa-bookmark"></i>
+                </button>
+                <button class="nav-btn" data-action="history" title="Search History">
+                    <i class="fas fa-history"></i>
+                </button>
+                <button class="nav-btn" id="toggleTheme" title="Toggle Theme">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button class="nav-btn" id="settingsBtn" title="Settings">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+
+            <div class="user-section">
+                <div class="user-avatar" title="User Account">
+                    <i class="fas fa-user"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="settings-overlay">
+        <div class="settings-card">
+            <div class="settings-header">
+                <h3><i class="fas fa-cog"></i>Settings</h3>
+                <button class="settings-close" id="closeSettingsBtn">×</button>
+            </div>
+
+            <div class="settings-content">
+                <div class="settings-sidebar">
+                    <button class="settings-tab active" data-tab="general">
+                        <i class="fas fa-sliders-h"></i>
+                        <span>General</span>
+                    </button>
+                    <button class="settings-tab" data-tab="search">
+                        <i class="fas fa-search"></i>
+                        <span>Search</span>
+                    </button>
+                    <button class="settings-tab" data-tab="privacy">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Privacy</span>
+                    </button>
+                    <button class="settings-tab" data-tab="appearance">
+                        <i class="fas fa-palette"></i>
+                        <span>Appearance</span>
+                    </button>
+                    <button class="settings-tab" data-tab="advanced">
+                        <i class="fas fa-code"></i>
+                        <span>Advanced</span>
+                    </button>
+                </div>
+
+                <div class="settings-panes">
+                    <!-- General Settings -->
+                    <div class="settings-pane active" id="general-pane">
+                        <div class="settings-group">
+                            <h4><i class="fas fa-language"></i>Language & Region</h4>
+                            <div class="setting">
+                                <div class="setting-header">
+                                    <div class="setting-label">
+                                        <h5>Interface Language</h5>
+                                        <p>Choose your preferred language for the interface</p>
+                                    </div>
+                                    <div class="setting-control">
+                                        <div class="input-group">
+                                            <i class="fas fa-language"></i>
+                                            <select id="languageSelect">
+                                                <option value="en">English</option>
+                                                <option value="si">Sinhala</option>
+                                                <option value="ta">Tamil</option>
+                                                <option value="es">Spanish</option>
+                                                <option value="fr">French</option>
+                                                <option value="de">German</option>
+                                                <option value="zh">Chinese</option>
+                                                <option value="ja">Japanese</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="setting">
+                                <div class="setting-header">
+                                    <div class="setting-label">
+                                        <h5>Search Results Language</h5>
+                                        <p>Filter results by language preference</p>
+                                    </div>
+                                    <div class="setting-control">
+                                        <div class="input-group">
+                                            <i class="fas fa-filter"></i>
+                                            <select id="searchLanguage">
+                                                <option value="auto">Auto-detect</option>
+                                                <option value="en">English only</option>
+                                                <option value="si">Sinhala only</option>
+                                                <option value="ta">Tamil only</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="setting">
+                                <div class="setting-header">
+                                    <div class="setting-label">
+                                        <h5>Time Zone</h5>
+                                        <p>Set your local time zone</p>
+                                    </div>
+                                    <div class="setting-control">
+                                        <div class="input-group">
+                                            <i class="fas fa-clock"></i>
+                                            <select id="timezoneSelect">
+                                                <option value="auto">Auto-detect</option>
+                                                <option value="Asia/Colombo">Asia/Colombo</option>
+                                                <option value="UTC">UTC</option>
+                                                <option value="America/New_York">America/New York</option>
+                                                <option value="Europe/London">Europe/London</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Search Settings -->
+                    <div class="settings-pane" id="search-pane">
+                        <div class="settings-group">
+                            <h4><i class="fas fa-search"></i>Search Preferences</h4>
+                            <div class="setting">
+                                <div class="setting-header">
+                                    <div class="setting-label">
+                                        <h5>Worker URL</h5>
+                                        <p>Backend API endpoint for search requests</p>
+                                    </div>
+                                    <div class="setting-control">
+                                        <div class="input-group">
+                                            <i class="fas fa-server"></i>
+                                            <input type="text" id="workerUrl" 
+                                                   placeholder="https://proxy.yoohoo.workers.dev" 
+                                                   spellcheck="false">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="setting">
+                                <div class="setting-header">
+                                    <div class="setting-label">
+                                        <h5>Safe Search</h5>
+                                        <p>Filter explicit content from search results</p>
+                                    </div>
+                                    <div class="setting-control">
+                                        <div class="input-group">
+                                            <i class="fas fa-shield-alt"></i>
+                                            <select id="safeSearch">
+                                                <option value="strict">Strict</option>
+                                                <option value="moderate">Moderate</option>
+                                                <option value="off">Off</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="setting">
+                                <div class="setting-header">
+                                    <div class="setting-label">
+                                        <h5>Default Search Provider</h5>
+                                        <p>Choose your default search engine</p>
+                                    </div>
+                                    <div class="setting-control">
+                                        <div class="radio-group">
+                                            <label class="radio-option">
+                                                <input type="radio" name="searchProvider" value="google" checked>
+                                                <span>Google</span>
+                                            </label>
+                                            <label class="radio-option">
+                                                <input type="radio" name="searchProvider" value="bing">
+                                                <span>Bing</span>
+                                            </label>
+                                            <label class="radio-option">
+                                                <input type="radio" name="searchProvider" value="duckduckgo">
+                                                <span>DuckDuckGo</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="setting">
+                                <div class="setting-header">
+                                    <div class="setting-label">
+                                        <h5>Results Per Page</h5>
+                                        <p>Number of results to show per page</p>
+                                    </div>
+                                    <div class="setting-control">
+                                        <input type="range" id="resultsPerPage" class="range-slider" min="5" max="50" value="10">
+                                        <span class="range-value" id="resultsValue">10</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Privacy Settings -->
+                    <div class="settings-pane" id="privacy-pane">
+                        <div class="settings-group">
+                            <h4><i class="fas fa-shield-alt"></i>Privacy & Security</h4>
+                            <div class="setting">
+                                <div class="setting-header">
+                                    <div class="setting-label">
+                                        <h5>Do Not Track</h5>
+                                        <p>Send Do Not Track request to websites</p>
+                                    </div>
+                                    <div class="setting-control">
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="doNotTrack">
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="setting">
+                                <div class="setting-header">
+                                    <div class="setting-label">
+                                        <h5>Clear Search History</h5>
+                                        <p>Automatically clear search history on exit</p>
+                                    </div>
+                                    <div class="setting-control">
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="clearHistory">
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="setting">
+                                <div class="setting-header">
+                                    <div class="setting-label">
+                                        <h5>Block Trackers</h5>
+                                        <p>Block third-party trackers and ads</p>
+                                    </div>
+                                    <div class="setting-control">
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="blockTrackers" checked>
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="setting">
+                                <div class="setting-header">
+                                    <div class="setting-label">
+                                        <h5>Search Suggestions</h5>
+                                        <p>Show search suggestions as you type</p>
+                                    </div>
+                                    <div class="setting-control">
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="searchSuggestions" checked>
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Appearance Settings -->
+                    <div class="settings-pane" id="appearance-pane">
+                        <div class="settings-group">
+                            <h4><i class="fas fa-palette"></i>Theme & Display</h4>
+                            <div class="setting">
+                                <div class="setting-header">
+                                    <div class="setting-label">
+                                        <h5>Theme Mode</h5>
+                                        <p>Choose between light, dark, or auto theme</p>
+                                    </div>
+                                    <div class="setting-control">
+                                        <div class="radio-group">
+                                            <label class="radio-option">
+                                                <input type="radio" name="themeMode" value="light" checked>
+                                                <span>Light</span>
+                                            </label>
+                                            <label class="radio-option">
+                                                <input type="radio" name="themeMode" value="dark">
+                                                <span>Dark</span>
+                                            </label>
+                                            <label class="radio-option">
+                                                <input type="radio" name="themeMode" value="auto">
+                                                <span>Auto (System)</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="setting">
+                                <div class="setting-header">
+                                    <div class="setting-label">
+                                        <h5>Accent Color</h5>
+                                        <p>Choose your preferred accent color</p>
+                                    </div>
+                                    <div class="setting-control">
+                                        <div class="color-picker">
+                                            <div class="color-option active" style="background: #4285f4;" data-color="#4285f4"></div>
+                                            <div class="color-option" style="background: #ea4335;" data-color="#ea4335"></div>
+                                            <div class="color-option" style="background: #34a853;" data-color="#34a853"></div>
+                                            <div class="color-option" style="background: #fbbc05;" data-color="#fbbc05"></div>
+                                            <div class="color-option" style="background: #8b5cf6;" data-color="#8b5cf6"></div>
+                                            <div class="color-option" style="background: #ec4899;" data-color="#ec4899"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="setting">
+                                <div class="setting-header">
+                                    <div class="setting-label">
+                                        <h5>Font Size</h5>
+                                        <p>Adjust the font size for better readability</p>
+                                    </div>
+                                    <div class="setting-control">
+                                        <input type="range" id="fontSize" class="range-slider" min="12" max="18" value="14" step="1">
+                                        <span class="range-value" id="fontValue">14px</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="setting">
+                                <div class="setting-header">
+                                    <div class="setting-label">
+                                        <h5>Animations</h5>
+                                        <p>Enable or disable interface animations</p>
+                                    </div>
+                                    <div class="setting-control">
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="animations" checked>
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Settings -->
+                    <div class="settings-pane" id="advanced-pane">
+                        <div class="settings-group">
+                            <h4><i class="fas fa-code"></i>Advanced Options</h4>
+                            <div class="setting">
+                                <div class="setting-header">
+                                    <div class="setting-label">
+                                        <h5>Debug Mode</h5>
+                                        <p>Enable detailed logging for debugging</p>
+                                    </div>
+                                    <div class="setting-control">
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="debugMode">
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="setting">
+                                <div class="setting-header">
+                                    <div class="setting-label">
+                                        <h5>Cache Duration</h5>
+                                        <p>How long to cache search results (minutes)</p>
+                                    </div>
+                                    <div class="setting-control">
+                                        <div class="input-group">
+                                            <i class="fas fa-database"></i>
+                                            <input type="number" id="cacheDuration" min="0" max="1440" value="60">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="setting">
+                                <div class="setting-header">
+                                    <div class="setting-label">
+                                        <h5>Custom CSS</h5>
+                                        <p>Add custom CSS for personal styling</p>
+                                    </div>
+                                    <div class="setting-control">
+                                        <div class="input-group">
+                                            <i class="fas fa-paint-brush"></i>
+                                            <textarea id="customCSS" placeholder="/* Add your custom CSS here */" rows="3"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="setting">
+                                <button class="btn btn-danger" onclick="clearAllData()">
+                                    <i class="fas fa-trash-alt"></i>
+                                    Clear All Data
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-footer">
+                <button class="btn btn-secondary" id="resetSettingsBtn">
+                    <i class="fas fa-undo"></i>
+                    Reset
+                </button>
+                <button class="btn btn-primary" id="saveSettingsBtn">
+                    <i class="fas fa-save"></i>
+                    Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content (Remains the same) -->
+    <main class="main-content">
+        <!-- Hero Section -->
+        <section class="search-hero" id="heroSection">
+            <div class="hero-logo">
+                <div class="logo-large">
+                    <span class="logo-letter">S</span>
+                    <span class="logo-letter">e</span>
+                    <span class="logo-letter">a</span>
+                    <span class="logo-letter">r</span>
+                    <span class="logo-letter">c</span>
+                    <span class="logo-letter">h</span>
+                </div>
+            </div>
+
+            <div class="search-container">
+                <div class="search-box-wrapper">
+                    <form id="searchForm" class="search-box">
+                        <input type="search" id="searchInput" class="search-input" placeholder="Search the web..." autocomplete="off" autocapitalize="off" spellcheck="false" required>
+                        <div class="search-icon">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <div class="search-controls">
+                            <button type="button" class="search-tool" title="Voice Search">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                            <button type="button" class="search-tool" title="Image Search">
+                                <i class="fas fa-camera"></i>
+                            </button>
+                            <button type="button" class="search-tool" title="Clear Search">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="search-buttons">
+                    <button type="submit" form="searchForm" class="primary-btn">
+                        <i class="fas fa-search"></i>
+                        Search
+                    </button>
+                    <button type="button" class="secondary-btn" id="luckyBtn">
+                        <i class="fas fa-dice"></i>
+                        I'm Feeling Lucky
+                    </button>
+                </div>
+
+                <div class="quick-links">
+                    <div class="language-selector">
+                        <span>Search in:</span>
+                        <select id="languageSelectMain">
+                            <option value="en">English</option>
+                            <option value="es">Español</option>
+                            <option value="fr">Français</option>
+                            <option value="de">Deutsch</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Results Section -->
+        <section class="results-section hidden" id="resultsSection">
+            <div class="results-header">
+                <div class="results-stats" id="resultsStats">
+                    <!-- Results stats will be populated here -->
+                </div>
+                <div class="results-tools">
+                    <div class="filter-dropdown">
+                        <button class="filter-btn">
+                            <i class="fas fa-filter"></i>
+                            <span>Filter</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="filter-menu">
+                            <button class="filter-option" data-filter="all">All Results</button>
+                            <button class="filter-option" data-filter="recent">Past 24 Hours</button>
+                            <button class="filter-option" data-filter="site">By Site</button>
+                            <button class="filter-option" data-filter="type">By Type</button>
+                        </div>
+                    </div>
+                    <button class="filter-btn" id="sortResults">
+                        <i class="fas fa-sort-amount-down"></i>
+                        <span>Sort</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="results-container">
+                <div id="resultsContainer">
+                    <!-- Search results will be populated here -->
+                </div>
+
+                <div class="pagination" id="resultsPagination">
+                    <!-- Pagination will be populated here -->
+                </div>
+
+                <div class="related-searches hidden" id="relatedSearches">
+                    <h4>Related Searches</h4>
+                    <div class="related-tags">
+                        <!-- Related searches will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Images Section -->
+        <section class="images-section hidden" id="imagesSection">
+            <div class="results-header">
+                <div class="results-stats" id="imagesStats"></div>
+            </div>
+            <div id="imagesContainer">
+                <!-- Images will be populated here -->
+            </div>
+        </section>
+
+        <!-- Videos Section -->
+        <section class="videos-section hidden" id="videosSection">
+            <div class="results-header">
+                <div class="results-stats" id="videosStats"></div>
+            </div>
+            <div id="videosContainer">
+                <!-- Videos will be populated here -->
+            </div>
+        </section>
+
+        <!-- News Section -->
+        <section class="news-section hidden" id="newsSection">
+            <div class="results-header">
+                <div class="results-stats" id="newsStats"></div>
+            </div>
+            <div id="newsContainer">
+                <!-- News will be populated here -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer (Remains the same) -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-location">
+                <div class="location-info">
+                    <i class="fas fa-location-dot"></i>
+                    <span>United States</span>
+                    <button class="location-change">Change location</button>
+                </div>
+            </div>
+
+            <div class="footer-links">
+                <div class="footer-column">
+                    <h5>Search</h5>
+                    <a href="#">Web Search</a>
+                    <a href="#">Image Search</a>
+                    <a href="#">Video Search</a>
+                    <a href="#">News Search</a>
+                    <a href="#">Advanced Search</a>
+                </div>
+
+                <div class="footer-column">
+                    <h5>Privacy</h5>
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                    <a href="#">Cookie Policy</a>
+                    <a href="#">Do Not Track</a>
+                    <a href="#">GDPR Compliance</a>
+                </div>
+
+                <div class="footer-column">
+                    <h5>Help</h5>
+                    <a href="#">Help Center</a>
+                    <a href="#">Search Tips</a>
+                    <a href="#">Keyboard Shortcuts</a>
+                    <a href="#">Report Issue</a>
+                    <a href="#">Contact Us</a>
+                </div>
+
+                <div class="footer-column">
+                    <h5>About</h5>
+                    <a href="#">About Us</a>
+                    <a href="#">Features</a>
+                    <a href="#">Blog</a>
+                    <a href="#">Careers</a>
+                    <a href="#">Press</a>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div class="copyright">
+                    &copy; 2024 Search Engine. All rights reserved.
+                </div>
+                <div class="footer-social">
+                    <a href="#" title="GitHub"><i class="fab fa-github"></i></a>
+                    <a href="#" title="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" title="Discord"><i class="fab fa-discord"></i></a>
+                    <a href="#" title="Reddit"><i class="fab fa-reddit"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript Files -->
+    <script src="scripts/utils.js"></script>
+    <script src="scripts/ui.js"></script>
+    <script src="scripts/search.js"></script>
+    <script>
+        /* =========================================================
+           Enhanced Settings System
+           ========================================================= */
+
+        class SettingsManager {
+            constructor() {
+                this.defaultSettings = {
+                    general: {
+                        language: 'en',
+                        searchLanguage: 'auto',
+                        timezone: 'auto'
+                    },
+                    search: {
+                        workerUrl: 'https://proxy.yoohoo.workers.dev',
+                        safeSearch: 'moderate',
+                        searchProvider: 'google',
+                        resultsPerPage: 10
+                    },
+                    privacy: {
+                        doNotTrack: false,
+                        clearHistory: false,
+                        blockTrackers: true,
+                        searchSuggestions: true
+                    },
+                    appearance: {
+                        themeMode: 'light',
+                        accentColor: '#4285f4',
+                        fontSize: 14,
+                        animations: true
+                    },
+                    advanced: {
+                        debugMode: false,
+                        cacheDuration: 60,
+                        customCSS: ''
+                    }
+                };
+                
+                this.settings = { ...this.defaultSettings };
+                this.init();
+            }
+
+            init() {
+                this.loadSettings();
+                this.bindEvents();
+                this.updateRangeValues();
+                this.applySavedSettings();
+            }
+
+            loadSettings() {
+                const saved = localStorage.getItem('searchEngineSettings');
+                if (saved) {
+                    try {
+                        this.settings = JSON.parse(saved);
+                        this.mergeWithDefaults();
+                    } catch (e) {
+                        console.error('Failed to load settings:', e);
+                    }
+                }
+            }
+
+            mergeWithDefaults() {
+                for (const category in this.defaultSettings) {
+                    if (!this.settings[category]) {
+                        this.settings[category] = { ...this.defaultSettings[category] };
+                    } else {
+                        for (const key in this.defaultSettings[category]) {
+                            if (this.settings[category][key] === undefined) {
+                                this.settings[category][key] = this.defaultSettings[category][key];
+                            }
+                        }
+                    }
+                }
+            }
+
+            saveSettings() {
+                localStorage.setItem('searchEngineSettings', JSON.stringify(this.settings));
+                this.applySavedSettings();
+                this.showToast('Settings saved successfully!');
+            }
+
+            resetToDefaults() {
+                if (confirm('Are you sure you want to reset all settings to default?')) {
+                    this.settings = { ...this.defaultSettings };
+                    this.saveSettings();
+                    this.updateUIFromSettings();
+                    this.showToast('Settings reset to defaults');
+                }
+            }
+
+            clearAllData() {
+                if (confirm('This will clear ALL saved data including settings, history, and cache. Continue?')) {
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    location.reload();
+                }
+            }
+
+            applySavedSettings() {
+                // Apply theme
+                document.documentElement.setAttribute('data-theme', this.settings.appearance.themeMode);
+                
+                // Apply accent color
+                document.documentElement.style.setProperty('--accent-color', this.settings.appearance.accentColor);
+                
+                // Apply font size
+                document.documentElement.style.fontSize = `${this.settings.appearance.fontSize}px`;
+                
+                // Apply custom CSS
+                this.applyCustomCSS();
+                
+                // Apply other settings
+                if (typeof window.applySearchSettings === 'function') {
+                    window.applySearchSettings(this.settings);
+                }
+            }
+
+            applyCustomCSS() {
+                let styleTag = document.getElementById('custom-css');
+                if (!styleTag) {
+                    styleTag = document.createElement('style');
+                    styleTag.id = 'custom-css';
+                    document.head.appendChild(styleTag);
+                }
+                styleTag.textContent = this.settings.advanced.customCSS;
+            }
+
+            updateUIFromSettings() {
+                // General
+                document.getElementById('languageSelect').value = this.settings.general.language;
+                document.getElementById('searchLanguage').value = this.settings.general.searchLanguage;
+                document.getElementById('timezoneSelect').value = this.settings.general.timezone;
+                
+                // Search
+                document.getElementById('workerUrl').value = this.settings.search.workerUrl;
+                document.getElementById('safeSearch').value = this.settings.search.safeSearch;
+                document.querySelector(`input[name="searchProvider"][value="${this.settings.search.searchProvider}"]`).checked = true;
+                document.getElementById('resultsPerPage').value = this.settings.search.resultsPerPage;
+                document.getElementById('resultsValue').textContent = this.settings.search.resultsPerPage;
+                
+                // Privacy
+                document.getElementById('doNotTrack').checked = this.settings.privacy.doNotTrack;
+                document.getElementById('clearHistory').checked = this.settings.privacy.clearHistory;
+                document.getElementById('blockTrackers').checked = this.settings.privacy.blockTrackers;
+                document.getElementById('searchSuggestions').checked = this.settings.privacy.searchSuggestions;
+                
+                // Appearance
+                document.querySelector(`input[name="themeMode"][value="${this.settings.appearance.themeMode}"]`).checked = true;
+                document.querySelectorAll('.color-option').forEach(opt => {
+                    opt.classList.remove('active');
+                    if (opt.dataset.color === this.settings.appearance.accentColor) {
+                        opt.classList.add('active');
+                    }
+                });
+                document.getElementById('fontSize').value = this.settings.appearance.fontSize;
+                document.getElementById('fontValue').textContent = `${this.settings.appearance.fontSize}px`;
+                document.getElementById('animations').checked = this.settings.appearance.animations;
+                
+                // Advanced
+                document.getElementById('debugMode').checked = this.settings.advanced.debugMode;
+                document.getElementById('cacheDuration').value = this.settings.advanced.cacheDuration;
+                document.getElementById('customCSS').value = this.settings.advanced.customCSS;
+            }
+
+            getCurrentSettings() {
+                // Get settings from UI
+                return {
+                    general: {
+                        language: document.getElementById('languageSelect').value,
+                        searchLanguage: document.getElementById('searchLanguage').value,
+                        timezone: document.getElementById('timezoneSelect').value
+                    },
+                    search: {
+                        workerUrl: document.getElementById('workerUrl').value,
+                        safeSearch: document.getElementById('safeSearch').value,
+                        searchProvider: document.querySelector('input[name="searchProvider"]:checked').value,
+                        resultsPerPage: parseInt(document.getElementById('resultsPerPage').value)
+                    },
+                    privacy: {
+                        doNotTrack: document.getElementById('doNotTrack').checked,
+                        clearHistory: document.getElementById('clearHistory').checked,
+                        blockTrackers: document.getElementById('blockTrackers').checked,
+                        searchSuggestions: document.getElementById('searchSuggestions').checked
+                    },
+                    appearance: {
+                        themeMode: document.querySelector('input[name="themeMode"]:checked').value,
+                        accentColor: document.querySelector('.color-option.active').dataset.color,
+                        fontSize: parseInt(document.getElementById('fontSize').value),
+                        animations: document.getElementById('animations').checked
+                    },
+                    advanced: {
+                        debugMode: document.getElementById('debugMode').checked,
+                        cacheDuration: parseInt(document.getElementById('cacheDuration').value),
+                        customCSS: document.getElementById('customCSS').value
+                    }
+                };
+            }
+
+            updateRangeValues() {
+                const ranges = document.querySelectorAll('.range-slider');
+                ranges.forEach(range => {
+                    range.addEventListener('input', (e) => {
+                        const value = e.target.id === 'fontSize' ? 
+                            `${e.target.value}px` : e.target.value;
+                        document.getElementById(`${e.target.id.replace('PerPage', '')}Value`).textContent = value;
+                    });
+                });
+            }
+
+            bindEvents() {
+                // Settings modal
+                document.getElementById('settingsBtn').addEventListener('click', () => this.showSettings());
+                document.getElementById('closeSettingsBtn').addEventListener('click', () => this.hideSettings());
+                document.getElementById('settingsModal').addEventListener('click', (e) => {
+                    if (e.target === e.currentTarget) this.hideSettings();
+                });
+                
+                // Tabs
+                document.querySelectorAll('.settings-tab').forEach(tab => {
+                    tab.addEventListener('click', (e) => this.switchTab(e.currentTarget.dataset.tab));
+                });
+                
+                // Color picker
+                document.querySelectorAll('.color-option').forEach(color => {
+                    color.addEventListener('click', (e) => {
+                        document.querySelectorAll('.color-option').forEach(c => c.classList.remove('active'));
+                        e.currentTarget.classList.add('active');
+                    });
+                });
+                
+                // Save button
+                document.getElementById('saveSettingsBtn').addEventListener('click', () => {
+                    this.settings = this.getCurrentSettings();
+                    this.saveSettings();
+                    this.hideSettings();
+                });
+                
+                // Reset button
+                document.getElementById('resetSettingsBtn').addEventListener('click', () => this.resetToDefaults());
+                
+                // Clear data button
+                document.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('btn-danger') && e.target.textContent.includes('Clear All Data')) {
+                        this.clearAllData();
+                    }
+                });
+                
+                // Keyboard shortcuts
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape' && document.getElementById('settingsModal').style.display === 'flex') {
+                        this.hideSettings();
+                    }
+                });
+            }
+
+            showSettings() {
+                const modal = document.getElementById('settingsModal');
+                modal.style.display = 'flex';
+                setTimeout(() => {
+                    modal.classList.add('active');
+                    this.updateUIFromSettings();
+                }, 10);
+            }
+
+            hideSettings() {
+                const modal = document.getElementById('settingsModal');
+                modal.classList.remove('active');
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                }, 300);
+            }
+
+            switchTab(tabId) {
+                // Update active tab
+                document.querySelectorAll('.settings-tab').forEach(tab => {
+                    tab.classList.toggle('active', tab.dataset.tab === tabId);
+                });
+                
+                // Show active pane
+                document.querySelectorAll('.settings-pane').forEach(pane => {
+                    pane.classList.toggle('active', pane.id === `${tabId}-pane`);
+                });
+            }
+
+            showToast(message) {
+                let toast = document.getElementById('settings-toast');
+                if (!toast) {
+                    toast = document.createElement('div');
+                    toast.id = 'settings-toast';
+                    toast.style.cssText = `
+                        position: fixed;
+                        bottom: 20px;
+                        right: 20px;
+                        background: var(--accent-color);
+                        color: white;
+                        padding: 12px 24px;
+                        border-radius: 8px;
+                        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                        z-index: 10000;
+                        transform: translateY(100px);
+                        opacity: 0;
+                        transition: all 0.3s ease;
+                    `;
+                    document.body.appendChild(toast);
+                }
+                
+                toast.textContent = message;
+                toast.style.opacity = '1';
+                toast.style.transform = 'translateY(0)';
+                
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateY(100px)';
+                }, 3000);
+            }
+        }
+
+        /* =========================================================
+           Initialize Settings Manager
+           ========================================================= */
+        document.addEventListener('DOMContentLoaded', () => {
+            window.settingsManager = new SettingsManager();
+            
+            // Integrate with existing app if it exists
+            if (window.app) {
+                // Override app's settings methods
+                window.app.openSettings = () => window.settingsManager.showSettings();
+                window.app.closeSettings = () => window.settingsManager.hideSettings();
+                window.app.saveSettingsFromUI = () => {
+                    window.settingsManager.settings = window.settingsManager.getCurrentSettings();
+                    window.settingsManager.saveSettings();
+                };
+            }
+        });
+
+        /* =========================================================
+           Service Worker Registration
+           ========================================================= */
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('scripts/service-worker.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful');
+                    })
+                    .catch(err => {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>
