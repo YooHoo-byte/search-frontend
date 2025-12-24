@@ -1,0 +1,248 @@
+/* Theme Variables */
+
+[data-theme="light"] {
+    --theme-primary: #4285f4;
+    --theme-secondary: #34a853;
+    --theme-accent: #ea4335;
+    --theme-warning: #fbbc05;
+    --theme-bg-primary: #ffffff;
+    --theme-bg-secondary: #f8f9fa;
+    --theme-bg-tertiary: #f1f3f4;
+    --theme-text-primary: #202124;
+    --theme-text-secondary: #5f6368;
+    --theme-text-tertiary: #80868b;
+    --theme-border: #dadce0;
+    --theme-border-hover: #bdc1c6;
+    --theme-shadow: rgba(60, 64, 67, 0.1);
+    --theme-overlay: rgba(255, 255, 255, 0.9);
+}
+
+[data-theme="dark"] {
+    --theme-primary: #8ab4f8;
+    --theme-secondary: #81c995;
+    --theme-accent: #f28b82;
+    --theme-warning: #fdd663;
+    --theme-bg-primary: #202124;
+    --theme-bg-secondary: #292a2d;
+    --theme-bg-tertiary: #3c4043;
+    --theme-text-primary: #e8eaed;
+    --theme-text-secondary: #9aa0a6;
+    --theme-text-tertiary: #80868b;
+    --theme-border: #5f6368;
+    --theme-border-hover: #80868b;
+    --theme-shadow: rgba(0, 0, 0, 0.3);
+    --theme-overlay: rgba(32, 33, 36, 0.9);
+}
+
+[data-theme="blue"] {
+    --theme-primary: #1a73e8;
+    --theme-secondary: #0d652d;
+    --theme-accent: #d93025;
+    --theme-warning: #f29900;
+    --theme-bg-primary: #ffffff;
+    --theme-bg-secondary: #f1f8ff;
+    --theme-bg-tertiary: #e8f0fe;
+    --theme-text-primary: #1c3aa9;
+    --theme-text-secondary: #5a5a72;
+    --theme-text-tertiary: #80868b;
+    --theme-border: #cbd5e1;
+    --theme-border-hover: #94a3b8;
+    --theme-shadow: rgba(28, 58, 169, 0.1);
+    --theme-overlay: rgba(255, 255, 255, 0.9);
+}
+
+[data-theme="midnight"] {
+    --theme-primary: #3b82f6;
+    --theme-secondary: #10b981;
+    --theme-accent: #ef4444;
+    --theme-warning: #f59e0b;
+    --theme-bg-primary: #0f172a;
+    --theme-bg-secondary: #1e293b;
+    --theme-bg-tertiary: #334155;
+    --theme-text-primary: #f1f5f9;
+    --theme-text-secondary: #94a3b8;
+    --theme-text-tertiary: #64748b;
+    --theme-border: #475569;
+    --theme-border-hover: #64748b;
+    --theme-shadow: rgba(0, 0, 0, 0.4);
+    --theme-overlay: rgba(15, 23, 42, 0.9);
+}
+
+
+/* Theme Selector */
+
+.theme-selector {
+    display: flex;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-sm);
+}
+
+.theme-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-xs);
+    cursor: pointer;
+    padding: var(--spacing-sm);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+}
+
+.theme-option:hover {
+    background-color: var(--bg-secondary);
+}
+
+.theme-option.active {
+    background-color: var(--bg-tertiary);
+    border: 2px solid var(--primary-color);
+}
+
+.theme-preview {
+    width: 60px;
+    height: 40px;
+    border-radius: var(--radius-sm);
+    border: 2px solid var(--border-color);
+}
+
+.theme-preview.light {
+    background: linear-gradient(135deg, #ffffff 50%, #f8f9fa 50%);
+}
+
+.theme-preview.dark {
+    background: linear-gradient(135deg, #202124 50%, #292a2d 50%);
+}
+
+.theme-preview.blue {
+    background: linear-gradient(135deg, #ffffff 50%, #f1f8ff 50%);
+}
+
+.theme-preview.midnight {
+    background: linear-gradient(135deg, #0f172a 50%, #1e293b 50%);
+}
+
+.theme-option span {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+
+/* Notification Styles */
+
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-radius: var(--radius-md);
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    z-index: 4000;
+    transform: translateX(100%);
+    opacity: 0;
+    transition: all var(--transition-normal);
+    max-width: 400px;
+}
+
+.notification.show {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.notification i {
+    font-size: 1.25rem;
+}
+
+.notification.success i {
+    color: var(--secondary-color);
+}
+
+.notification.error i {
+    color: var(--accent-color);
+}
+
+.notification.warning i {
+    color: var(--warning-color);
+}
+
+.notification.info i {
+    color: var(--primary-color);
+}
+
+.notification span {
+    flex: 1;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+}
+
+.notification-close {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: var(--spacing-xs);
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+}
+
+.notification-close:hover {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+
+/* Custom Scrollbar */
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background-color: var(--bg-secondary);
+    border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: var(--border-color);
+    border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: var(--border-hover);
+}
+
+
+/* Selection Color */
+
+::selection {
+    background-color: var(--primary-color);
+    color: var(--text-inverse);
+}
+
+
+/* Focus Styles */
+
+:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+
+/* Placeholder Color */
+
+::placeholder {
+    color: var(--text-tertiary);
+    opacity: 1;
+}
+
+:-ms-input-placeholder {
+    color: var(--text-tertiary);
+}
+
+::-ms-input-placeholder {
+    color: var(--text-tertiary);
+}
